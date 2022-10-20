@@ -46,27 +46,32 @@ class Contenedor{
     }
 }
 
+const productos1 = new Contenedor(productos)
+
 const escuadra={
     title: 'Escuadra',
     price: 123,
     thumbnail:'https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-256.png'
 }
 
-    
-const productos1 = new Contenedor(productos)
-
 productos1.save(escuadra)
 
-
-
-const escuadra2={
+const lapiz={
     title: 'Lapiz',
     price: 1234,
-    thumbnail:'https://cdn3.iconfinder.com/data/icons/education-209/64/ruler-triangle-stationary-school-256.png'
+    thumbnail:'imagen de un lapiz'
 }
 
 
-productos1.save(escuadra2)
+productos1.save(lapiz)
+
+const cuaderno = {
+    title: 'Cuaderno',
+    price: 40,
+    thumbnail: 'Imagen de un cuaderno'
+}
+
+productos1.save(cuaderno)
 
 productos1.getAll()
 
