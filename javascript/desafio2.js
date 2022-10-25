@@ -15,8 +15,14 @@ class Contenedor{
         if(productos.length == 0){
             obj.id = 1
             productos.push(obj)
-            fs.writeFileSync('./productos.txt',`${JSON.stringify(productos)}`)
-            return console.log(`producto ${obj.title} agregado con el id ${obj.id}`)
+            fs.writeFile('./productos.txt', `${JSON.stringify(productos)}`, err =>{
+                if(err){
+                    console.log(err)
+                }
+                else{
+                    return console.log(`producto ${obj.title} agregado con el id ${obj.id}`)
+                }
+            })
         }
         else{
             let ids=[]
@@ -24,21 +30,49 @@ class Contenedor{
             let idMax=Math.max(...ids)
             obj.id = idMax +1
             productos.push(obj)
-            fs.writeFileSync('./productos.txt',`${JSON.stringify(productos)}`)
-            return console.log(`producto ${obj.title} agregado con el id ${obj.id}`)
+            fs.writeFile('./productos.txt', `${JSON.stringify(productos)}`, err =>{
+                if(err){
+                    console.log(err)
+                }
+                else{
+                    return console.log(`producto ${obj.title} agregado con el id ${obj.id}`)
+                }
+            })
         }
     }
     getById(id){
-        let producto = productos.find(prod => prod.id == id)
-        return console.log(producto)
+        fs.readFile('./productos.txt', 'utf-8', (err,data) =>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                let producto = JSON.parse(data).find(prod => prod.id == id)
+                return console.log(producto)
+            }
+        }) 
     }
     getAll(){
-        return console.log(productos)
+        fs.readFile('./productos.txt', 'utf-8', (err,data) =>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                let productos = JSON.parse(data)
+                return console.log(productos)
+            }
+        }) 
     }
-    deleteById(id){
-        let filtro = productos.filter(prod => prod.id !== id)
-        fs.writeFileSync('./productos.txt',`${JSON.stringify(filtro)}`)
-        return console.log(filtro)
+    deleteById(id){        
+        fs.readFile('./productos.txt', 'utf-8', (err,data) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            let filtro = JSON.parse(data).filter(prod => prod.id !== id)
+            fs.writeFileSync('./productos.txt',`${JSON.stringify(filtro)}`)
+            return console.log(filtro)
+        }
+    }) 
     }
     deleteAll(){
         productos = []
@@ -75,7 +109,9 @@ productos1.save(cuaderno)
 
 productos1.getAll()
 
-productos1.deleteById(1)
+productos1.getById(1)
 
-productos1.deleteAll()
+productos1.deleteById(1) 
+
+productos1.deleteAll() 
 
