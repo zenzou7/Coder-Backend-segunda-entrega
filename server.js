@@ -25,19 +25,22 @@ app.use('/api/productos', router);
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 })
+    
+router.get('/', async(req, res) => {
+    try{
+        const prods = await classProductos.getAll()
+        res.json({success: true, user: prods})}
+    catch(err){
+        console.log(err)
+    }
+})
 
-const getProductos = async ()=>{
-    const prods = await classProductos.getAll()
 
-    router.get('/', (req, res) => {
-        res.json({success: true, user: prods})
-})}
-getProductos()
 
-const getPorId = async () =>{
-    const prods = await classProductos.getAll()
-
-    router.get('/:id', (req, res) => {
+    
+router.get('/:id', async(req, res) => {
+    try{
+        const prods = await classProductos.getAll()
         const {id} = req.params
         
         let prodId = prods.find(prod => prod.id == id)
@@ -47,48 +50,60 @@ const getPorId = async () =>{
         else{
             res.json({error:true, msg:'Producto no encontrado'})
         }
+    }
+    catch(err){
+        console.log(err)
+    }
 })
-}
-getPorId()
+
 
 app.post('/datos', upload.none(), (req, res) => {
-    const body = req.body
-    classProductos.save(body)
-    if(body){
-        res.json({success: true, user: body})
+    try{
+        const body = req.body
+        classProductos.save(body)
+        if(body){
+            res.json({success: true, user: body})
+        }
+        else{
+            res.json({error:true, msg:'Producto no agregado'})
+        }
     }
-    else{
-        res.json({error:true, msg:'Producto no agregado'})
+    catch(err){
+        console.log(err)
     }
 })
 
-const putId = async () =>{
-    const prods = await classProductos.getAll();
 
-    router.put('/:id', (req, res) => {
+    
+router.put('/:id', async(req, res) => {
+   try{
+        const prods = await classProductos.getAll();
         const id = req.params.id;
         const body = req.body;
 
         let index= prods.findIndex(prod => prod.id == id)
         if (index >= 0) {
-          prods[index] = body
-          fs.writeFileSync('./productos.json', JSON.stringify(prods)) 
-          res.json({ success: true, user: body });
+            prods[index] = body
+            fs.writeFileSync('./productos.json', JSON.stringify(prods)) 
+            res.json({ success: true, user: body });
         } else {
-          res.json({ error: true, msg: 'no encontrado' });
+            res.json({ error: true, msg: 'no encontrado' });
         }
-      });
-}
-putId();
-
-const borrar = async() =>{
-    let data = await classProductos.getAll();
-
-    router.delete('/:id', (req, res) => {
+    }
+    catch(err){
+        console.log(err)
+    }
+    });
+    
+router.delete('/:id', async(req, res) => {
+    try{
+        let data = await classProductos.getAll();
         const id  = req.params.id;
         prods = data.filter((prod) => prod.id != id)
         fs.writeFileSync('./productos.json', JSON.stringify(prods))
         res.json({ success: true, msg:'Producto borrado' });
-      });
-}
-borrar()
+    }
+    catch(err){
+        console.log(err)
+    }
+    });
