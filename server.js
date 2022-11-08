@@ -5,6 +5,7 @@ const router = Router()
 const {Contenedor} = require('./class')
 const multer = require('multer')
 const upload = multer()
+const { engine }= require('express-handlebars')
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -22,20 +23,31 @@ app.listen(PORT, () => {
 
 app.use('/api/productos', router);
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+app.set('view engine', 'hbs');
+app.set('views', './views');
+app.engine(
+    'hbs',
+    engine({
+        extname: '.hbs',
+        defaultLayout: 'index.hbs',
+        layoutsDir: __dirname + '/views/layouts',
+        partialsDir: __dirname + '/views/partials'
+    })
+);
+
+app.get('/', async(req, res) => {
+    res.render('form');
 })
     
 router.get('/', async(req, res) => {
     try{
         const prods = await classProductos.getAll()
-        res.json({success: true, user: prods})}
+        res.render('productosList', {products: prods})
+    }
     catch(err){
         console.log(err)
     }
 })
-
-
 
     
 router.get('/:id', async(req, res) => {
@@ -57,7 +69,7 @@ router.get('/:id', async(req, res) => {
 })
 
 
-app.post('/datos', upload.none(), (req, res) => {
+router.post('/form', upload.none(), (req, res) => {
     try{
         const body = req.body
         classProductos.save(body)
