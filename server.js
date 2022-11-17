@@ -4,75 +4,41 @@ const { Router } = require('express');
 const router = Router();
 const { Contenedor } = require('./class');
 const multer = require('multer');
+const { parse } = require('path');
 const upload = multer();
-const { engine } = require('express-handlebars');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 let productos = [];
-
 const classProductos = new Contenedor(productos);
 
-app.use(express.json());
+app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port http://localhost:${PORT}`);
+//Socket.io
+const httpServer = require('http').createServer(app);
+const io = require('socket.io')(httpServer);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server on http://localhost:${PORT}`);
 });
 
 app.use('/api/productos', router);
 
-//pug
-app.set('view engine', 'pug');
-app.set('views', './views');
+app.set('view engine', 'ejs');
 
-app.get('/pug/form', (req, res) => {
-  res.render('form.pug');
-});
-
-app.get('/pug/productos', async (req, res) => {
+app.get('/', async (req, res) => {
   try {
     const prods = await classProductos.getAll();
-    res.render('productospug.pug', { products: prods });
+    res.render('pages/form', { products: prods });
   } catch (err) {
     console.log(err);
   }
-});
-//fin de pug
-
-//Handlebars
-app.set('view engine', 'hbs');
-app.set('views', './views');
-app.engine(
-  'hbs',
-  engine({
-    extname: '.hbs',
-    defaultLayout: 'index.hbs',
-    layoutsDir: __dirname + '/views/layouts',
-    partialsDir: __dirname + '/views/partials',
-  })
-);
-
-app.get('/', (req, res) => {
-  res.render('form');
 });
 
 router.get('/', async (req, res) => {
-  try {
-    const prods = await classProductos.getAll();
-    res.render('productosList', { products: prods });
-  } catch (err) {
-    console.log(err);
-  }
-});
-//fin handlebars
-
-//ejs ESTO ESTA COMENTADO POR INCOPATIBILIDAD CON HBS
-
-/* app.set('view engine', 'ejs'); 
-
-app.get('/ejs/productos', async (req, res) => {
   try {
     const prods = await classProductos.getAll();
     res.render('pages/productos', { products: prods });
@@ -81,17 +47,11 @@ app.get('/ejs/productos', async (req, res) => {
   }
 });
 
-app.get('/ejs/form', (req, res) => {
-  res.render('pages/form');
-});*/
-//fin ejs
-
 router.post('/form', upload.none(), (req, res) => {
   try {
     const body = req.body;
     classProductos.save(body);
     if (body) {
-      res.json({ success: true, user: body });
     } else {
       res.json({ error: true, msg: 'Producto no agregado' });
     }
@@ -145,4 +105,53 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     console.log(err);
   }
+});
+
+io.on('connection', async (socket) => {
+  console.log('Usuario conectado');
+
+  socket.on('msg', async (data) => {
+    const msgJson = await fs.promises.readFile('./mensajes.json', 'utf-8');
+    const msgs = await JSON.parse(msgJson);
+
+    if (msgs) {
+      msgs.push({
+        email: data.email,
+        mensaje: data.mensaje,
+      });
+
+      fs.writeFile('./mensajes.json', `${JSON.stringify(msgs)}`, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+
+      io.sockets.emit('msg-list', msgs);
+    } else {
+      let arrayMsg = [];
+
+      arrayMsg.push({
+        email: data.email,
+        mensaje: data.mensaje,
+      });
+
+      fs.writeFile('./mensajes.json', `${JSON.stringify(arrayMsg)}`, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+
+      io.sockets.emit('msg-list', msgs);
+    }
+  });
+
+  socket.on('sendTable', async (data) => {
+    classProductos.save(data);
+    try {
+      const productos = await classProductos.getAll();
+      socket.emit('prods', productos);
+    } catch (err) {
+      console.log(err);
+    }
+  });
 });
