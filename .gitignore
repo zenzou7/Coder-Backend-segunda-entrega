@@ -1,2 +1,7 @@
 /node_modules  
 .prettierrc
+.env
+/serveroriginal.js
+/views
+/src/Containers/prodsContainer.js
+/DB/mydb.sqlite

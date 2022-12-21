@@ -1,141 +1,66 @@
-const express = require('express');
-const fs = require('fs');
-
-const { Router } = require('express');
-const router = Router();
-
-const { Contenedor } = require('./js/prodsContainer.js');
-const { ContenedorMsgs } = require('./js/msgContainer');
-
-const classMsgs = new ContenedorMsgs('mensajes');
-const classProductos = new Contenedor('productos');
-
-const multer = require('multer');
-const upload = multer();
-
+import express from 'express';
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = 8080 || process.env.PORT;
 
-app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-//Socket.io
-const httpServer = require('http').createServer(app);
-const io = require('socket.io')(httpServer);
+import productosRouter from './productos.cjs';
+app.use('/api/productos', productosRouter);
 
-httpServer.listen(PORT, () => {
-  console.log(`Server on http://localhost:${PORT}`);
+/* import routerCarrito from './carrito.js';
+app.use('/api/carrito', routerCarrito); */
+
+app.use('/static', express.static('./src/assets'));
+
+const server = app.listen(PORT, () => {
+  console.log('servidor de express iniciado');
 });
 
-app.set('view engine', 'ejs');
-
-app.use('/api/productos', router);
-
-app.get('/', async (req, res) => {
-  try {
-    const prods = await classProductos.getAll();
-    res.render('pages/form', { products: prods });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-router.get('/', async (req, res) => {
-  try {
-    const prods = await classProductos.getAll();
-    res.render('pages/productos', { products: prods });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-router.post('/form', upload.none(), (req, res) => {
-  try {
-    const body = req.body;
-    classProductos.save(body);
-    if (body) {
-    } else {
-      res.json({ error: true, msg: 'Producto no agregado' });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-router.put('/:id', async (req, res) => {
-  try {
-    const prods = await classProductos.getAll();
-    const id = req.params.id;
-    const body = req.body;
-
-    let index = prods.findIndex((prod) => prod.id == id);
-    if (index >= 0) {
-      prods[index] = body;
-      fs.writeFileSync('./productos.json', JSON.stringify(prods));
-      res.json({ success: true, user: body });
-    } else {
-      res.json({ error: true, msg: 'no encontrado' });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    let data = await classProductos.getAll();
-    const id = req.params.id;
-    prods = data.filter((prod) => prod.id != id);
-    fs.writeFileSync('./productos.json', JSON.stringify(prods));
-    res.json({ success: true, msg: 'Producto borrado' });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-router.get('/:id', async (req, res) => {
-  try {
-    const prods = await classProductos.getAll();
-    const { id } = req.params;
-
-    let prodId = prods.find((prod) => prod.id == id);
-    if (prodId) {
-      res.json({ success: true, user: prodId });
-    } else {
-      res.json({ error: true, msg: 'Producto no encontrado' });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-io.on('connection', async (socket) => {
-  console.log('Usuario conectado');
-
-  socket.on('msg', async (data) => {
-    let fecha = new Date();
-
-    const mensaje = {
-      email: data.email,
-      mensaje: data.mensaje,
-      fecha: fecha.getDate() + '/' + (fecha.getMonth() + 1) + '/' + fecha.getFullYear(),
-      hora: fecha.getHours() + ':' + fecha.getMinutes() + ':' + fecha.getSeconds(),
-    };
-
-    classMsgs.save(mensaje);
-
-    io.sockets.emit('msg-list', mensaje);
-  });
-
-  socket.on('sendTable', async (data) => {
-    classProductos.save(data);
-
-    try {
-      const productos = await classProductos.getAll();
-      socket.emit('prods', productos);
-    } catch (err) {
-      console.log(err);
-    }
-  });
-});
+const productos = [
+  {
+    name: 'Espada',
+    price: 4999,
+    thumbnail: 'https://amaterasu.com.ar/wp-content/uploads/2017/06/saber.jpg',
+  },
+  {
+    name: 'Escudo',
+    price: 3377,
+    thumbnail: 'https://thumbs.dreamstime.com/b/escudo-de-oro-del-metal-aislado-44256777.jpg',
+  },
+  {
+    name: 'Arco',
+    price: 3888,
+    thumbnail: 'https://www.armeriacanigo.com.ar/wp-content/uploads/9840_1-324x324.jpg',
+  },
+  {
+    name: 'Lanza',
+    price: 4650,
+    thumbnail: 'https://m.media-amazon.com/images/I/31JhTDklAeL._AC_SY1000_.jpg',
+  },
+  {
+    name: 'Claymore',
+    price: 3888,
+    thumbnail: 'https://www.armeriacanigo.com.ar/wp-content/uploads/9840_1-324x324.jpg',
+  },
+  {
+    name: 'Bokken',
+    price: 2888,
+    thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_772951-MLA31011434187_062019-O.jpg',
+  },
+  {
+    name: 'Carcaj',
+    price: 1888,
+    thumbnail: 'https://c8.alamy.com/compes/rxxp0r/el-carcaj-con-flechas-rxxp0r.jpg',
+  },
+  {
+    name: 'Guantes de boxeo',
+    price: 1588,
+    thumbnail: 'https://www.armeriacanigo.com.ar/wp-content/uploads/9840_1-324x324.jpg',
+  },
+  {
+    name: 'Daga',
+    price: 4788,
+    thumbnail: 'https://static.wikia.nocookie.net/warframe/images/e/e4/Daga_oscura.png/revision/latest?cb=20190826003122&path-prefix=es',
+  },
+];
