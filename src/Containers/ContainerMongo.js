@@ -18,26 +18,42 @@ class ContenedorMongo {
 
   async getAll() {
     const prods = await this.ruta.find();
-    console.log(prods);
+
     return prods;
   }
-  async getById(id) {
-    const prod = await this.ruta.find({ _id: id });
+  async getById(prodId) {
+    const prod = await this.ruta.find({}).sort({ id: prodId }).limit(1);
     return prod;
   }
   async save(obj) {
     const newProd = new this.ruta(obj);
-    const productoGuardad = await newProd.save();
+    newProd.save(function (err) {
+      if (err) return console.log(err);
+    });
+
     return console.log('Guardado con exito');
   }
-  async update(obj) {
-    const usuarioModificado = await this.ruta.updateOne({ name: `${obj.name}` }, { $set: { obj } });
-    return console.log('Modificado con exito');
+  async update(id, obj) {
+    const objId = { id: id };
+    const update = {
+      $set: obj,
+    };
+    const options = { upsert: false };
+
+    await this.ruta
+      .updateOne(objId, update, options)
+      .then((result) => {
+        const { matchedCount, modifiedCount } = result;
+        if (matchedCount && modifiedCount) {
+          console.log(`Se actualizó correctamente.`);
+        }
+      })
+      .catch((err) => console.error(`No se pudo actualizar: ${err}`));
   }
-  async delete(name) {
-    if (name) {
-      const usuarioBorrar = await this.ruta.deleteOne({ name: `${name}` });
-      return console.log(`Producto ${name} borrado`);
+  async delete(id) {
+    if (id) {
+      const usuarioBorrar = await this.ruta.deleteOne({ id: `${id}` });
+      return console.log(`Producto ${id} borrado`);
     } else {
       const deleteAll = await this.ruta.deleteMany({});
       return console.log('Todos los this.ruta borrados');

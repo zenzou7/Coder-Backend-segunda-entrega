@@ -4,15 +4,17 @@ import CarritoDaoArchivos from './carritos/daoArchivoCarrito.js';
 import ProductosDaoMongo from './productos/daoMongoProductos.js';
 import CarritoDaoMongo from './carritos/daoMongoCarrito.js';
 
-/* import ProductosDaoFirestore from './productos/daoFirestoreProductos.js';
-import CarritoDaoFirestore from './carritos/daoFiresoreCarrito.js'; */
+import ProductosDaoFirestore from './productos/daoFirestoreProductos.js';
+import CarritoDaoFirestore from './carritos/daoFiresoreCarrito.js';
 
 import ProductosDaoMemoria from './productos/daoMemoriaProductos.js';
 import CarritoDaoMemoria from './carritos/daoMemoriaCarrito.js';
 
-import { config } from 'dotenv';
+import * as dotenv from 'dotenv';
 
-config();
+dotenv.config();
+
+const env = process.env.INSTANCIA;
 
 const instancias = [
   {
@@ -27,7 +29,7 @@ const instancias = [
   },
   {
     nombre: ProductosDaoMongo,
-    id: 'Mongo',
+    id: 'mongo',
     descripcion: 'producto',
   },
   {
@@ -35,7 +37,7 @@ const instancias = [
     id: 'mongo',
     descripcion: 'carrito',
   },
-  /* {
+  {
     nombre: ProductosDaoFirestore,
     id: 'firestore',
     descripcion: 'producto',
@@ -44,7 +46,7 @@ const instancias = [
     nombre: CarritoDaoFirestore,
     id: 'firestore',
     descripcion: 'carrito',
-  }, */
+  },
   {
     nombre: ProductosDaoMemoria,
     id: 'memoria',
@@ -57,7 +59,7 @@ const instancias = [
   },
 ];
 
-const instancia = instancias.filter((i) => i.id == process.env.INSTANCIA);
+const instancia = instancias.filter((i) => i.id == env);
 
 const resultado = {
   [instancia[0].descripcion]: instancia[0].nombre,

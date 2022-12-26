@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import * as fs from 'fs';
 
 class ContenedorArchivo {
   constructor(ruta) {
@@ -7,17 +7,17 @@ class ContenedorArchivo {
 
   async getAll() {
     try {
-      const objs = await fs.readFile(this.ruta, 'utf-8');
+      const objs = await fs.promises.readFile(this.ruta, 'utf-8');
       const res = await JSON.parse(objs);
 
       return res;
-    } catch (error) {
-      return [];
+    } catch (e) {
+      console.log(e);
     }
   }
 
   async getById(id) {
-    const objs = await this.getAll();
+    const objs = await this.ruta.getAll();
     const buscado = objs.find((o) => o.id == id);
 
     if (buscado) {
@@ -30,7 +30,7 @@ class ContenedorArchivo {
   async save(obj) {
     console.log('entre');
     try {
-      const objs = await this.getAll();
+      const objs = await this.ruta.getAll();
       let id;
 
       if (!objs || !objs.length) {

@@ -1,4 +1,4 @@
-import ContenedorFirestore from '../../Containers/ContainerFirebase.js';
+import ContenedorFirestore from '../../Containers/ContainerFirebase.cjs';
 
 class CarritoDaoFirestore extends ContenedorFirestore {
   constructor() {

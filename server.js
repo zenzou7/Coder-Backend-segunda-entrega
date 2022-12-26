@@ -1,22 +1,39 @@
+import RouterProds from './routerProductos.js';
+
+import RouterCarrito from './routerCarrito.js';
+
+import resultado from './src/DAOS/index.js';
+
+const daoProd = resultado.producto;
+const classProd = new daoProd();
+
 import express from 'express';
 const app = express();
+
 const PORT = 8080 || process.env.PORT;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.set('view engine', 'ejs');
 
-import productosRouter from './productos.cjs';
-app.use('/api/productos', productosRouter);
+app.use('/api/productos', RouterProds);
+app.use('/api/carrito', RouterCarrito);
 
-/* import routerCarrito from './carrito.js';
-app.use('/api/carrito', routerCarrito); */
-
-app.use('/static', express.static('./src/assets'));
-
-const server = app.listen(PORT, () => {
-  console.log('servidor de express iniciado');
+app.listen(PORT, () => {
+  console.log(`Server on http://localhost:${PORT}`);
 });
 
+app.get('/', async (req, res) => {
+  try {
+    const prods = await classProd.getAll();
+
+    res.json({ user: prods });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+/* 
 const productos = [
   {
     name: 'Espada',
@@ -64,3 +81,4 @@ const productos = [
     thumbnail: 'https://static.wikia.nocookie.net/warframe/images/e/e4/Daga_oscura.png/revision/latest?cb=20190826003122&path-prefix=es',
   },
 ];
+ */

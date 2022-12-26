@@ -1,4 +1,4 @@
-const socket = io();
+/* const socket = io();
 socket.on('connect', () => {
   console.log('me conecte!');
 });
@@ -50,3 +50,4 @@ socket.on('prods', (data) => {
   });
   tabla.innerHTML += html;
 });
+ */
