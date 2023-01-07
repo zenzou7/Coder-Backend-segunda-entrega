@@ -3,17 +3,18 @@ import resultado from './src/DAOS/index.js';
 const { Router } = express;
 const RouterCarrito = Router();
 
-const carritos = resultado.carrito;
+const carrito = resultado.carrito;
+const classCarrito = new carrito();
 
 RouterCarrito.post('/', async (req, res) => {
   const { ...objeto } = req.body;
-  await carritos.save({ ...objeto });
+  await classCarrito.save({ ...objeto });
   res.json({ guardado: objeto.id });
 });
 
 RouterCarrito.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  await carritos.delete(id);
+  await classCarrito.delete(id);
   res.json({ carritoEliminado: id });
 });
 
@@ -21,9 +22,9 @@ RouterCarrito.get('/:id/productos', async (req, res) => {
   const { id } = req.params;
   let listado;
   if (id) {
-    await carritos.listarPorID(id);
+    await classCarrito.getById(id);
   } else {
-    await carritos.listarTodos();
+    await classCarrito.getAll();
   }
 
   res.json({ productos: listado });
@@ -32,13 +33,13 @@ RouterCarrito.get('/:id/productos', async (req, res) => {
 RouterCarrito.post('/:id/productos', async (req, res) => {
   const { id } = req.params;
   let { ...nuevoCarrito } = req.body;
-  await carritos.save(nuevoCarrito);
+  await classCarrito.save(nuevoCarrito);
 });
 
 RouterCarrito.delete('/:id/productos/:id_prod', async (req, res) => {
   const { id } = req.params;
 
-  await carritos.delete(id);
+  await classCarrito.delete(id);
 });
 
 export default RouterCarrito;
